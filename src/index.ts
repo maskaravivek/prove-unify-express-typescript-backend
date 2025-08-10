@@ -1,9 +1,18 @@
 // src/index.ts
 import express, { Request, Response } from 'express';
+import cors from 'cors';
 import { Proveapi } from "@prove-identity/prove-api";
 
 const app = express();
 const port = process.env.PORT || 3000;
+
+// Enable CORS for all routes
+app.use(cors({
+    origin: ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:8080'], // Add your frontend URLs
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 app.use(express.json());
 app.use((err: any, _req: Request, res: Response, _next: any) => {
@@ -44,6 +53,64 @@ interface UnifyBindRequest {
     correlationId: string;
     phoneNumber: string;
 }
+
+// Initialize endpoint - this is what the frontend calls first to get an authToken
+app.post('/initialize', async (req: Request, res: Response) => {
+    try {
+        const { possessionType, phoneNumber }: UnifyRequest = req.body;
+
+        if (!possessionType) {
+            return res.status(400).json({ error: 'possessionType is required' });
+        }
+
+        if (possessionType === 'desktop' && !req.body.finalTargetUrl) {
+            return res.status(400).json({ error: 'finalTargetUrl is required for desktop possession type' });
+        }
+
+        const proveSdk = getProveSdk();
+        const result = await proveSdk.v3.v3UnifyRequest({
+            possessionType,
+            phoneNumber,
+            finalTargetUrl: req.body.finalTargetUrl,
+            smsMessage: req.body.smsMessage,
+            clientCustomerId: req.body.clientCustomerId,
+            clientRequestId: req.body.clientRequestId,
+            allowOTPRetry: req.body.allowOTPRetry,
+            rebind: req.body.rebind
+        });
+
+        // Return the response in the format expected by the frontend
+        res.json({
+            authToken: result.v3UnifyResponse?.authToken,
+            correlationId: result.v3UnifyResponse?.correlationId,
+            success: result.v3UnifyResponse?.success
+        });
+    } catch (error: any) {
+        console.error('Initialize error:', error);
+        res.status(500).json({ error: error.message || 'Failed to initialize' });
+    }
+});
+
+// Verify endpoint - called by frontend after possession check completes
+app.post('/verify', async (req: Request, res: Response) => {
+    try {
+        const { correlationId } = req.body;
+
+        if (!correlationId) {
+            return res.status(400).json({ error: 'correlationId is required' });
+        }
+
+        const proveSdk = getProveSdk();
+        const result = await proveSdk.v3.v3UnifyStatusRequest({
+            correlationId
+        });
+
+        res.json(result);
+    } catch (error: any) {
+        console.error('Verify error:', error);
+        res.status(500).json({ error: error.message || 'Failed to verify' });
+    }
+});
 
 app.post('/unify', async (req: Request, res: Response) => {
     try {
