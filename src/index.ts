@@ -1,7 +1,6 @@
 // src/index.ts
 import express, { Request, Response } from 'express';
 import cors from 'cors';
-import { Proveapi } from "@prove-identity/prove-api";
 
 const app = express();
 const port = process.env.PORT || 3000;
