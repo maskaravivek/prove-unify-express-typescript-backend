@@ -49,11 +49,6 @@ interface UnifyRequest {
     rebind?: boolean;
 }
 
-interface UnifyBindRequest {
-    correlationId: string;
-    phoneNumber: string;
-}
-
 // Initialize endpoint - this is what the frontend calls first to get an authToken
 app.post('/initialize', async (req: Request, res: Response) => {
     try {
@@ -109,78 +104,6 @@ app.post('/verify', async (req: Request, res: Response) => {
     } catch (error: any) {
         console.error('Verify error:', error);
         res.status(500).json({ error: error.message || 'Failed to verify' });
-    }
-});
-
-app.post('/unify', async (req: Request, res: Response) => {
-    try {
-        const { possessionType, phoneNumber, finalTargetUrl, smsMessage, clientCustomerId, clientRequestId, allowOTPRetry, rebind }: UnifyRequest = req.body;
-
-        if (!possessionType) {
-            return res.status(400).json({ error: 'possessionType is required' });
-        }
-
-        if (possessionType === 'desktop' && !finalTargetUrl) {
-            return res.status(400).json({ error: 'finalTargetUrl is required for desktop possession type' });
-        }
-
-        const proveSdk = getProveSdk();
-        const result = await proveSdk.v3.v3UnifyRequest({
-            possessionType,
-            phoneNumber,
-            finalTargetUrl,
-            smsMessage,
-            clientCustomerId,
-            clientRequestId,
-            allowOTPRetry,
-            rebind
-        });
-
-        res.json(result);
-    } catch (error: any) {
-        console.error('Unify error:', error);
-        res.status(500).json({ error: error.message || 'Failed to initiate unify' });
-    }
-});
-
-app.get('/unify/status/:correlationId', async (req: Request, res: Response) => {
-    try {
-        const { correlationId } = req.params;
-
-        if (!correlationId) {
-            return res.status(400).json({ error: 'correlationId is required' });
-        }
-
-        const proveSdk = getProveSdk();
-        const result = await proveSdk.v3.v3UnifyStatusRequest({
-            correlationId
-        });
-
-        res.json(result);
-    } catch (error: any) {
-        console.error('Unify status error:', error);
-        res.status(500).json({ error: error.message || 'Failed to check unify status' });
-    }
-});
-
-app.post('/unify/bind', async (req: Request, res: Response) => {
-    try {
-        const { correlationId, phoneNumber }: UnifyBindRequest = req.body;
-
-        if (!correlationId || !phoneNumber) {
-            return res.status(400).json({ error: 'correlationId and phoneNumber are required' });
-        }
-
-        const proveSdk = getProveSdk();
-        const result = await proveSdk.v3.v3UnifyBindRequest({
-            correlationId,
-            phoneNumber
-        });
-
-        res.json(result);
-    } catch (error: any) {
-        console.error('Unify bind error:', error);
-        res.status(500).json({ error: error.message || 'Failed to bind unify' });
     }
 });
 
