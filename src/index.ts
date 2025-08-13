@@ -20,7 +20,7 @@ app.use((err: any, _req: Request, res: Response, _next: any) => {
 });
 
 app.get('/', (_req: Request, res: Response) => {
-    res.send('Prove Unify Server - Express with TypeScript');
+    res.send('Welcome to Prove Unify Server!');
 });
 
 app.listen(port, () => {
