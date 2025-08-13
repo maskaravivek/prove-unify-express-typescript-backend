@@ -20,7 +20,6 @@
     "typescript": "^5.9.2"
   },
   "dependencies": {
-    "@prove-identity/prove-api": "^0.12.1",
     "@types/cors": "^2.8.19",
     "cors": "^2.8.5"
   }
