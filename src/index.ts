@@ -21,7 +21,6 @@ app.use((err: any, _req: Request, res: Response, _next: any) => {
     res.status(500).json({ error: 'Internal server error' });
 });
 
-export const DEVICE_API_BASE_URL = process.env.DEVICE_API_BASE_URL || '';
 export const PROVE_CLIENT_ID = process.env.PROVE_CLIENT_ID;
 export const PROVE_CLIENT_SECRET = process.env.PROVE_CLIENT_SECRET;
 
