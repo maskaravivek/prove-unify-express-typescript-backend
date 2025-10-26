@@ -2,6 +2,7 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import { Proveapi } from "@prove-identity/prove-api";
+import { randomUUID } from 'crypto';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -69,7 +70,7 @@ app.post('/initialize', async (req: Request, res: Response) => {
             finalTargetUrl: req.body.finalTargetUrl,
             smsMessage: req.body.smsMessage,
             clientCustomerId: req.body.clientCustomerId,
-            clientRequestId: req.body.clientRequestId,
+            clientRequestId: req.body.clientRequestId || randomUUID(),
             allowOTPRetry: req.body.allowOTPRetry,
             rebind: req.body.rebind
         });
